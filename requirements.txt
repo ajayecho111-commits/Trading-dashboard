@@ -1,5 +1,5 @@
-streamlit
 yfinance
+streamlit
+streamlit-option-menu
 pandas
 plotly
-streamlit-option-menu
