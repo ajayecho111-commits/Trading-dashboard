@@ -1,17 +1,12 @@
 import streamlit as st
 import yfinance as yf
 from streamlit_option_menu import option_menu
-import pandas as pd
 
-st.set_page_config(page_title="Pro Trading Terminal", layout="wide")
+st.set_page_config(page_title="My Trading Terminal", layout="wide")
 
-# Custom CSS for Dark Mode
-st.markdown("""<style>
-    [data-testid="stSidebar"] { background-color: #161a1e; }
-    </style>""", unsafe_allow_html=True)
-
-# Watchlist Mapping (Sirf wahi assets jo tune bheje hain)
-watchlist = {
+# Teri 30 assets ki exact list (Yfinance Symbols)
+# Maine symbols ko Yahoo Finance ke format mein set kiya hai
+assets = {
     "BTCUSD": "BTC-USD", "ETHUSD": "ETH-USD", "BNBUSDT": "BNB-USD", "SOLUSDC": "SOL-USD",
     "GOLD": "GC=F", "SILVER": "SI=F", "USOIL": "CL=F", "TSLA": "TSLA", "PLTR": "PLTR",
     "SPX": "^GSPC", "NVDA": "NVDA", "AAPL": "AAPL", "MSFT": "MSFT", "GOOGL": "GOOGL",
@@ -19,28 +14,21 @@ watchlist = {
 }
 
 with st.sidebar:
-    st.title("🎯 Pro Terminal")
-    selected = option_menu("Watchlist", list(watchlist.keys()))
+    st.title("🎯 Watchlist")
+    selected_name = option_menu("Assets", list(assets.keys()))
 
-symbol = watchlist[selected]
+symbol = assets[selected_name]
 
-st.header(f"📈 Chart: {selected}")
+st.header(f"📈 Chart: {selected_name}")
 
-# Data Fetching with Safety
+# Data Fetching logic (Safest way)
 try:
-    data = yf.download(symbol, period="3mo", interval="1d")
-    
-    if not data.empty:
-        # Simple Moving Average (21 days) - Bina extra library ke
-        data['SMA_21'] = data['Close'].rolling(window=21).mean()
-        
-        # Plotting
-        st.line_chart(data[['Close', 'SMA_21']])
-        
-        # Stats Table
-        st.write("### Technical Snapshot")
-        st.dataframe(data.tail())
+    df = yf.download(symbol, period="1mo", interval="1d")
+    if not df.empty:
+        st.line_chart(df['Close'])
+        st.write(f"Latest Price Data for {selected_name}:")
+        st.dataframe(df.tail())
     else:
-        st.warning("Data load nahi ho pa raha. Market closed ya API error.")
+        st.error("Data abhi nahi aa raha. Shayad market closed hai.")
 except Exception as e:
-    st.error(f"Error: {e}")
+    st.error("Kuch technical error aaya hai. Refresh karke dekho.")
