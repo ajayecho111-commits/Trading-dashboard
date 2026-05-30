@@ -1,9 +1,17 @@
 import streamlit as st
 import yfinance as yf
+from streamlit_option_menu import option_menu
 
-st.set_page_config(page_title="Pro Trading Terminal", layout="wide")
+st.set_page_config(page_title="Pro Terminal", layout="wide")
 
-# Teri 30 Assets ki EXACT list (As per images)
+# Custom CSS for that dark "Pro" look
+st.markdown("""
+    <style>
+    [data-testid="stSidebar"] { background-color: #161a1e; }
+    </style>
+""", unsafe_allow_html=True)
+
+# Teri 30 Assets ki list
 watchlist = {
     "USDT.D": "USDT-D", "TOTAL": "TOTAL", "TOTAL2": "TOTAL2", "TOTAL3": "TOTAL3",
     "BTC.D": "BTC.D", "BTCUSD": "BTC-USD", "ETHUSD": "ETH-USD", "ALTCOIN.P": "ALTCOIN-USD",
@@ -14,19 +22,21 @@ watchlist = {
     "MSFT": "MSFT", "GOOGL": "GOOGL", "AMZN": "AMZN", "META": "META", "ORCL": "ORCL"
 }
 
-st.title("🎯 My Personal Trading Watchlist")
+# Sidebar Watchlist
+with st.sidebar:
+    st.title("🎯 Watchlist")
+    selected = option_menu("Assets", list(watchlist.keys()), 
+                           icons=['currency-exchange'] * 30, menu_icon="cast", default_index=0)
 
-# Watchlist sidebar
-selected_name = st.sidebar.selectbox("Select Asset:", list(watchlist.keys()))
-symbol = watchlist[selected_name]
+# Main Logic
+symbol = watchlist[selected]
+st.header(f"Chart: {selected}")
 
 try:
     data = yf.download(symbol, period="3mo")
     if not data.empty:
-        st.subheader(f"Analysis: {selected_name}")
         st.line_chart(data['Close'])
-        st.write(data.tail())
     else:
-        st.error("Data abhi load nahi ho raha.")
+        st.error("Data load nahi ho raha, market shayad closed hai.")
 except:
-    st.error("Market Data Error.")
+    st.error("Error fetching data.")
